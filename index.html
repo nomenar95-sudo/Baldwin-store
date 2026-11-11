@@ -45,28 +45,19 @@ label{display:block;color:#d5e1ee;font-size:13px;margin:13px 0 6px}input,select{
   <p id="loginError" class="hint"></p>
 </div></section>
 </main><footer>BALDWIN STORE UC • Prototype de préparation — non affilié à PUBG MOBILE.</footer>
-<script>
-const packs=["60 UC","325 UC","660 UC","1800 UC","3850 UC","8100 UC"];let selected="";
-const grid=document.getElementById('packGrid');
-packs.forEach(name=>{const b=document.createElement('button');b.type='button';b.className='pack';b.innerHTML=`<div class="uc">${name}</div><small>Pack PUBG MOBILE</small><div class="price">Prix bientôt disponible</div>`;b.onclick=()=>{document.querySelectorAll('.pack').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selected=name;document.getElementById('chosen').value=name};grid.appendChild(b)});
-const read=()=>JSON.parse(localStorage.getItem('baldwin_demo_orders')||'[]');
-function render(){const a=read();document.getElementById('count').textContent=a.length;document.getElementById('pending').textContent=a.filter(x=>x.status==='En attente').length;document.getElementById('done').textContent=a.filter(x=>x.status==='Validée').length;const el=document.getElementById('orders');if(!a.length){el.innerHTML='<p class="hint">Aucune commande pour le moment.</p>';return}el.innerHTML=a.slice().reverse().map(o=>`<div class="order"><b>${o.pack}</b> — ${escapeHtml(o.name)}<div class="hint">Player ID : ${escapeHtml(o.player)} • ${o.method}</div><div class="status">${o.status} • ${o.date}</div><div class="row"><button class="secondary" onclick="changeStatus(${o.id},'Validée')">Valider</button><button class="secondary" onclick="changeStatus(${o.id},'Refusée')">Refuser</button></div></div>`).join('')}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-window.changeStatus=(id,status)=>{let a=read();let o=a.find(x=>x.id===id);if(o)o.status=status;localStorage.setItem('baldwin_demo_orders',JSON.stringify(a));render()};
-document.getElementById('orderForm').onsubmit=e=>{e.preventDefault();if(!selected){alert('Choisis d’abord un pack.');return}let a=read();a.push({id:Date.now(),pack:selected,name:document.getElementById('customer').value.trim(),player:document.getElementById('player').value.trim(),method:document.getElementById('method').value,status:'En attente',date:new Date().toLocaleString()});localStorage.setItem('baldwin_demo_orders',JSON.stringify(a));document.getElementById('success').classList.remove('hidden');document.getElementById('success').textContent='Demande de test enregistrée sur cet appareil.';e.target.reset();selected='';document.getElementById('chosen').value='';document.querySelectorAll('.pack').forEach(x=>x.classList.remove('selected'));render()};
-document.getElementById('login').onclick=()=>{if(document.getElementById('pin').value==='2468'){document.getElementById('loginBox').classList.add('hidden');document.getElementById('dashboard').classList.remove('hidden');render()}else document.getElementById('loginError').textContent='Code incorrect. Pour cette démo, le code est 2468.'};
-document.getElementById('logout').onclick=()=>{document.getElementById('dashboard').classList.add('hidden');document.getElementById('loginBox').classList.remove('hidden');document.getElementById('pin').value=''};
-document.getElementById('refresh').onclick=render;document.getElementById('clear').onclick=()=>{if(confirm('Effacer les commandes de test de cet appareil ?')){localStorage.removeItem('baldwin_demo_orders');render()}};render();
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://ykyshbzdngnwwgnnheqx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_fzWgFh6QtReMzWfEmUVasA_OPfKQDLo";
-const ADMIN_ID = "4212768b-d389-44fb-9fa3-f8d2888ba430";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
-const packs = ["60 UC","325 UC","660 UC","1800 UC","3850 UC","8100 UC"];
+// PACK UC
+const packs = ["60 UC", "325 UC", "660 UC", "1800 UC", "3850 UC", "8100 UC"];
 let selected = "";
 
 const grid = document.getElementById("packGrid");
@@ -75,33 +66,34 @@ packs.forEach(name => {
   const b = document.createElement("button");
   b.type = "button";
   b.className = "pack";
-  b.innerHTML = `<div class="uc">${name}</div><small>Pack PUBG MOBILE</small><div class="price">Prix bientôt disponible</div>`;
+  b.innerHTML = `
+    <div class="uc">${name}</div>
+    <small>Pack PUBG MOBILE</small>
+    <div class="price">Prix bientôt disponible</div>
+  `;
+
   b.onclick = () => {
-    document.querySelectorAll(".pack").forEach(x => x.classList.remove("selected"));
+    document.querySelectorAll(".pack").forEach(x =>
+      x.classList.remove("selected")
+    );
     b.classList.add("selected");
     selected = name;
     document.getElementById("chosen").value = name;
   };
+
   grid.appendChild(b);
 });
 
-function safe(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;",
-    '"':"&quot;", "'":"&#39;"
-  }[c]));
-}
-
-// ENVOI COMMANDE VERS SUPABASE
+// COMMANDE TEST
 document.getElementById("orderForm").onsubmit = async e => {
   e.preventDefault();
 
   if (!selected) {
-    alert("Choisis d'abord un pack.");
+    alert("Choisis d'abord un pack UC.");
     return;
   }
 
-  const btn = document.getElementById("orderForm").querySelector('button[type="submit"]');
+  const btn = e.target.querySelector('button[type="submit"]');
   const message = document.getElementById("success");
 
   btn.disabled = true;
@@ -124,125 +116,19 @@ document.getElementById("orderForm").onsubmit = async e => {
     return;
   }
 
-  message.textContent = "Commande envoyée avec succès !";
+  message.textContent = "Demande de test envoyée avec succès !";
+
   e.target.reset();
   selected = "";
-  document.querySelectorAll(".pack").forEach(x => x.classList.remove("selected"));
+  document.querySelectorAll(".pack").forEach(x =>
+    x.classList.remove("selected")
+  );
 };
 
-// AFFICHAGE DES COMMANDES ADMIN
-async function renderOrders() {
-  const el = document.getElementById("orders");
-  el.innerHTML = '<p class="hint">Chargement...</p>';
+// Admin mbola amboarina
+document.getElementById("loginBox").classList.add("hidden");
 
-  const { data, error } = await db
-    .from("orders")
-    .select("id,created_at,player_id,uc_pack,payment_method,customer_contact,status")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    el.innerHTML = '<p class="hint">Erreur : ' + safe(error.message) + '</p>';
-    return;
-  }
-
-  const orders = data || [];
-
-  document.getElementById("count").textContent = orders.length;
-  document.getElementById("pending").textContent =
-    orders.filter(o => o.status === "En attente").length;
-  document.getElementById("done").textContent =
-    orders.filter(o => o.status === "Validée").length;
-
-  if (!orders.length) {
-    el.innerHTML = '<p class="hint">Aucune commande.</p>';
-    return;
-  }
-
-  el.innerHTML = orders.map(o => `
-    <div class="order">
-      <b>${safe(o.uc_pack)}</b> — ${safe(o.customer_contact)}
-      <div class="hint">Player ID : ${safe(o.player_id)} • ${safe(o.payment_method)}</div>
-      <div class="status">${safe(o.status)} • ${o.created_at ? new Date(o.created_at).toLocaleString() : ""}</div>
-      <div class="row">
-        <button class="secondary" data-id="${safe(o.id)}" data-status="Validée">Valider</button>
-        <button class="secondary" data-id="${safe(o.id)}" data-status="Refusée">Refuser</button>
-      </div>
-    </div>
-  `).join("");
-
-  el.querySelectorAll("[data-id]").forEach(btn => {
-    btn.onclick = () => updateStatus(btn.dataset.id, btn.dataset.status);
-  });
-}
-
-async function updateStatus(id, status) {
-  const { error } = await db.from("orders")
-    .update({ status: status })
-    .eq("id", id);
-
-  if (error) {
-    alert("Erreur : " + error.message);
-    return;
-  }
-
-  renderOrders();
-}
-
-// CONNEXION ADMIN SUPABASE
-document.getElementById("login").onclick = async () => {
-  const email = document.getElementById("adminEmail").value.trim();
-  const password = document.getElementById("adminPassword").value;
-  const errorBox = document.getElementById("loginError");
-
-  errorBox.textContent = "Connexion...";
-
-  const { data, error } = await db.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    errorBox.textContent = "Erreur : " + error.message;
-    return;
-  }
-
-  if (data.user.id !== ADMIN_ID) {
-    await db.auth.signOut();
-    errorBox.textContent = "Compte non autorisé.";
-    return;
-  }
-
-  errorBox.textContent = "";
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-  renderOrders();
-};
-
-document.getElementById("logout").onclick = async () => {
-  await db.auth.signOut();
-  document.getElementById("dashboard").classList.add("hidden");
-  document.getElementById("loginBox").classList.remove("hidden");
-  document.getElementById("adminPassword").value = "";
-};
-
-document.getElementById("refresh").onclick = renderOrders;
-
-// FANAMARINANA SESSION RAHA EFA NIDITRA
-(async () => {
-  const { data } = await db.auth.getSession();
-  const user = data.session?.user;
-
-  if (user && user.id === ADMIN_ID) {
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("dashboard").classList.remove("hidden");
-    renderOrders();
-  } else if (user) {
-    await db.auth.signOut();
-  }
-})();
-</script>
-
-<script>
+// Service Worker
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
@@ -251,3 +137,4 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 </script>
 </body>
 </html>
+
